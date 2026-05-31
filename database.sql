@@ -119,9 +119,60 @@ CREATE TABLE contact_messages (
     subject VARCHAR(255),
     institution VARCHAR(255),
     message TEXT NOT NULL,
-    destination_email VARCHAR(255) NOT NULL,
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- 1. Tabla de información principal del Grupo (Tendrá un solo registro)
+CREATE TABLE groups (
+    id SERIAL PRIMARY KEY,
+    description TEXT NOT NULL,
+    general_objective TEXT NOT NULL,
+    domain TEXT NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    url_logo TEXT,
+    address VARCHAR(255) NOT NULL,
+    
+    -- Campos de Auditoría y Borrado Lógico
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by INT REFERENCES users(id),
+    modified_at TIMESTAMP,
+    modified_by INT REFERENCES users(id),
+    deleted_at TIMESTAMP
+);
+
+-- 1. Añadir las nuevas columnas con los datos reales por defecto
+ALTER TABLE groups
+ADD COLUMN acronym VARCHAR(50) NOT NULL DEFAULT 'REASONS',
+ADD COLUMN name VARCHAR(255) NOT NULL DEFAULT 'Research in Engineering and Advanced Sustainable Operations, Nature, and Society';
+
+-- 2. Limpiar el valor por defecto
+ALTER TABLE groups 
+ALTER COLUMN acronym DROP DEFAULT,
+ALTER COLUMN name DROP DEFAULT;
+
+-- 2. Tabla para los Objetivos Específicos (CORREGIDO)
+CREATE TABLE specific_objectives (
+    id SERIAL PRIMARY KEY,
+    description TEXT NOT NULL,
+    group_id INT REFERENCES groups(id) ON DELETE CASCADE,
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP -- Borrado lógico
+);
+
+-- 3. Tabla para las Líneas de Investigación
+CREATE TABLE lines_of_research (
+    id SERIAL PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    group_id INT REFERENCES groups(id) ON DELETE CASCADE,
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP -- Borrado lógico
+);
+
+
 
 -- 8. Alter Tables finales para evitar dependencias circulares
 ALTER TABLE users

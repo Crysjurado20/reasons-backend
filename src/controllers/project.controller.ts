@@ -49,8 +49,11 @@ export class ProjectController {
       // 3. Enviamos al modelo la data validada (result.data) y el ID del creador
       const newProject = await this.projectModel.create({ input: result.data, createdBy });
       res.status(201).json(newProject);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
+      if (error.code === 'P2003') {
+        return res.status(400).json({ message: 'Uno de los identificadores relacionados (ej. investigador) no existe en la base de datos.' });
+      }
       res.status(500).json({ message: 'Error creating project' });
     }
   }
@@ -87,8 +90,11 @@ export class ProjectController {
       if (!updatedProject) return res.status(404).json({ message: 'Project not found' });
       
       res.json(updatedProject);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
+      if (error.code === 'P2003') {
+        return res.status(400).json({ message: 'Uno de los identificadores relacionados (ej. investigador) no existe en la base de datos.' });
+      }
       res.status(500).json({ message: 'Error updating project' });
     }
   }

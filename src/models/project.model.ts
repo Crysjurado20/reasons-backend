@@ -8,6 +8,13 @@ export class ProjectModel {
       },
       orderBy: {
         created_at: 'desc',
+      },
+      include: {
+        objectives: { where: { deleted_at: null } },
+        results: { where: { deleted_at: null } },
+        researcher_projects: {
+          include: { researchers: true }
+        }
       }
     });
   }
@@ -18,6 +25,13 @@ export class ProjectModel {
         id: Number(id),
         deleted_at: null,
       },
+      include: {
+        objectives: { where: { deleted_at: null } },
+        results: { where: { deleted_at: null } },
+        researcher_projects: {
+          include: { researchers: true }
+        }
+      }
     });
   }
 
@@ -27,7 +41,15 @@ export class ProjectModel {
         title: input.title,
         description: input.description,
         status: input.status,
-        created_by: createdBy
+        created_by: createdBy,
+        objectives: input.objectives ? { create: input.objectives } : undefined,
+        results: input.results ? { create: input.results } : undefined,
+        researcher_projects: input.researchers ? { create: input.researchers } : undefined
+      },
+      include: {
+        objectives: true,
+        results: true,
+        researcher_projects: { include: { researchers: true } }
       }
     });
   }
@@ -42,6 +64,16 @@ export class ProjectModel {
 
     if (!existing) return null;
 
+    if (input.objectives) {
+      await prisma.objectives.deleteMany({ where: { project_id: Number(id) } });
+    }
+    if (input.results) {
+      await prisma.results.deleteMany({ where: { project_id: Number(id) } });
+    }
+    if (input.researchers) {
+      await prisma.researcher_projects.deleteMany({ where: { project_id: Number(id) } });
+    }
+
     return await prisma.projects.update({
       where: {
         id: Number(id),
@@ -52,7 +84,15 @@ export class ProjectModel {
         status: input.status ?? existing.status,
         modified_by: modifiedBy,
         modified_at: new Date(),
+        objectives: input.objectives ? { create: input.objectives } : undefined,
+        results: input.results ? { create: input.results } : undefined,
+        researcher_projects: input.researchers ? { create: input.researchers } : undefined
       },
+      include: {
+        objectives: true,
+        results: true,
+        researcher_projects: { include: { researchers: true } }
+      }
     });
   }
 

@@ -1,6 +1,17 @@
 import { z } from 'zod';
 
-// Definimos la forma exacta que debe tener un Proyecto
+const objectiveSchema = z.object({
+  description: z.string().min(5, 'La descripción es muy corta')
+});
+
+const resultSchema = z.object({
+  description: z.string().min(5, 'La descripción es muy corta')
+});
+
+const researcherProjectSchema = z.object({
+  researcher_id: z.number().int().positive()
+});
+
 const projectSchema = z.object({
   title: z.string({
     message: 'Title is required',
@@ -9,7 +20,10 @@ const projectSchema = z.object({
   description: z.string().optional(),
   
   status: z.enum(['ACTIVE', 'INACTIVE', 'COMPLETED']).default('ACTIVE'),
-  
+
+  objectives: z.array(objectiveSchema).optional(),
+  results: z.array(resultSchema).optional(),
+  researchers: z.array(researcherProjectSchema).optional()
 });
 
 export function validateProject(input: unknown) {

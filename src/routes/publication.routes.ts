@@ -1,13 +1,15 @@
 import { Router } from 'express';
-import { getPublications, getPublicationById, createPublication, deletePublication, updatePublication } from '../controllers/publicationsController';
+import { PublicationController } from '../controllers/publication.controller';
+import { PublicationModel } from '../models/publication.model';
 import { authenticateToken } from '../middlewares/auth';
 
-const router = Router();
+const publicationRouter = Router();
+const publicationController = new PublicationController({ publicationModel: PublicationModel });
 
-router.get('/', getPublications);
-router.get('/:id', getPublicationById);
-router.post('/', authenticateToken, createPublication);
-router.put('/:id', authenticateToken, updatePublication);
-router.delete('/:id', authenticateToken, deletePublication);
+publicationRouter.get('/', publicationController.getAll);
+publicationRouter.get('/:id', publicationController.getById);
+publicationRouter.post('/', authenticateToken, publicationController.create);
+publicationRouter.delete('/:id', authenticateToken, publicationController.delete);
+publicationRouter.patch('/:id', authenticateToken, publicationController.update);
 
-export default router;
+export default publicationRouter;
