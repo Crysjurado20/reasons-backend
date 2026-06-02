@@ -9,6 +9,7 @@ import publicationsRoutes from './routes/publication.routes';
 import groupsRoutes from './routes/group.routes';
 import contactsRoutes from './routes/contact.routes';
 import socialNetworksRoutes from './routes/social_network.routes';
+import { ContactRetryService } from './services/contact-retry.service';
 
 dotenv.config();
 
@@ -40,6 +41,9 @@ app.get('/', (req, res) => {
 app.listen(PORT, async () => {
   console.log(`Servidor está corriendo en el puerto: ${PORT}`);
   await checkDbConnection();
+  
+  // Start background resilient retry worker for unsent contact messages
+  ContactRetryService.start(30000); // Check every 30 seconds
 });
 
 export default app;

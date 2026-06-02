@@ -32,6 +32,7 @@ model contact_messages {
   institution  String?   @db.VarChar(255)
   message      String
   created_at   DateTime? @default(now()) @db.Timestamp(6)
+  sent         Boolean   @default(false)
 }
 
 model groups {
