@@ -36,6 +36,13 @@ export class ProjectModel {
   }
 
   static async create({ input, createdBy }: { input: any, createdBy: number }) {
+    // Saneamiento y casteo estricto a Number de los IDs de investigadores
+    const researcherData = input.researchers 
+      ? input.researchers.map((res: any) => ({
+          researcher_id: Number(res.researcher_id)
+        }))
+      : [];
+
     return await prisma.projects.create({
       data: {
         title: input.title,
@@ -44,7 +51,7 @@ export class ProjectModel {
         created_by: createdBy,
         objectives: input.objectives ? { create: input.objectives } : undefined,
         results: input.results ? { create: input.results } : undefined,
-        researcher_projects: input.researchers ? { create: input.researchers } : undefined
+        researcher_projects: input.researchers ? { create: researcherData } : undefined
       },
       include: {
         objectives: true,
@@ -74,6 +81,13 @@ export class ProjectModel {
       await prisma.researcher_projects.deleteMany({ where: { project_id: Number(id) } });
     }
 
+    // Saneamiento y casteo estricto a Number para la actualización
+    const researcherData = input.researchers 
+      ? input.researchers.map((res: any) => ({
+          researcher_id: Number(res.researcher_id)
+        }))
+      : [];
+
     return await prisma.projects.update({
       where: {
         id: Number(id),
@@ -86,7 +100,7 @@ export class ProjectModel {
         modified_at: new Date(),
         objectives: input.objectives ? { create: input.objectives } : undefined,
         results: input.results ? { create: input.results } : undefined,
-        researcher_projects: input.researchers ? { create: input.researchers } : undefined
+        researcher_projects: input.researchers ? { create: researcherData } : undefined
       },
       include: {
         objectives: true,
