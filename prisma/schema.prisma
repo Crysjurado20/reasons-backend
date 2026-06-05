@@ -1,0 +1,195 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model articles {
+  id                                Int                   @id @default(autoincrement())
+  title                             String                @db.VarChar(255)
+  abstract                          String?
+  cite                              String?
+  status                            String?               @db.VarChar(50)
+  url_journal_cover                 String?
+  created_at                        DateTime?             @default(now()) @db.Timestamp(6)
+  created_by                        Int?
+  modified_at                       DateTime?             @db.Timestamp(6)
+  modified_by                       Int?
+  deleted_at                        DateTime?             @db.Timestamp(6)
+  users_articles_created_byTousers  users?                @relation("articles_created_byTousers", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users_articles_modified_byTousers users?                @relation("articles_modified_byTousers", fields: [modified_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  researcher_articles               researcher_articles[]
+}
+
+model contact_messages {
+  id           Int       @id @default(autoincrement())
+  sender_name  String    @db.VarChar(255)
+  sender_email String    @db.VarChar(255)
+  subject      String?   @db.VarChar(255)
+  institution  String?   @db.VarChar(255)
+  message      String
+  created_at   DateTime? @default(now()) @db.Timestamp(6)
+  sent         Boolean   @default(false)
+}
+
+model groups {
+  id                              Int                   @id @default(autoincrement())
+  description                     String
+  general_objective               String
+  domain                          String
+  url_logo                        String?
+  created_at                      DateTime?             @default(now()) @db.Timestamp(6)
+  created_by                      Int?
+  modified_at                     DateTime?             @db.Timestamp(6)
+  modified_by                     Int?
+  deleted_at                      DateTime?             @db.Timestamp(6)
+  email                           String                @db.VarChar(255)
+  address                         String                @db.VarChar(255)
+  acronym                         String                @db.VarChar(50)
+  name                            String                @db.VarChar(255)
+  users_groups_created_byTousers  users?                @relation("groups_created_byTousers", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users_groups_modified_byTousers users?                @relation("groups_modified_byTousers", fields: [modified_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  lines_of_research               lines_of_research[]
+  specific_objectives             specific_objectives[]
+}
+
+model lines_of_research {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String
+  group_id    Int?
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+  deleted_at  DateTime? @db.Timestamp(6)
+  groups      groups?   @relation(fields: [group_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model objectives {
+  id          Int       @id @default(autoincrement())
+  description String
+  project_id  Int?
+  deleted_at  DateTime? @db.Timestamp(6)
+  projects    projects? @relation(fields: [project_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model projects {
+  id                                Int                   @id @default(autoincrement())
+  title                             String                @db.VarChar(255)
+  description                       String?
+  status                            String?               @db.VarChar(50)
+  created_at                        DateTime?             @default(now()) @db.Timestamp(6)
+  created_by                        Int?
+  modified_at                       DateTime?             @db.Timestamp(6)
+  modified_by                       Int?
+  deleted_at                        DateTime?             @db.Timestamp(6)
+  objectives                        objectives[]
+  users_projects_created_byTousers  users?                @relation("projects_created_byTousers", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users_projects_modified_byTousers users?                @relation("projects_modified_byTousers", fields: [modified_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  researcher_projects               researcher_projects[]
+  results                           results[]
+}
+
+model researcher_articles {
+  researcher_id Int
+  article_id    Int
+  articles      articles    @relation(fields: [article_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  researchers   researchers @relation(fields: [researcher_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([researcher_id, article_id])
+}
+
+model researcher_projects {
+  project_id    Int
+  researcher_id Int
+  projects      projects    @relation(fields: [project_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  researchers   researchers @relation(fields: [researcher_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([project_id, researcher_id])
+}
+
+model researcher_socials {
+  researcher_id     Int
+  social_network_id Int
+  link_social       String
+  researchers       researchers     @relation(fields: [researcher_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  social_networks   social_networks @relation(fields: [social_network_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([researcher_id, social_network_id])
+}
+
+model researchers {
+  id                                   Int                   @id @default(autoincrement())
+  first_name                           String                @db.VarChar(100)
+  second_name                          String?               @db.VarChar(100)
+  first_lastname                       String                @db.VarChar(100)
+  second_lastname                      String?               @db.VarChar(100)
+  orcid_link                           String?               @db.VarChar(255)
+  institutional_email                  String?               @unique @db.VarChar(255)
+  biography                            String?
+  position                             String?               @db.VarChar(100)
+  status                               String?               @db.VarChar(50)
+  url_photo                            String?
+  created_at                           DateTime?             @default(now()) @db.Timestamp(6)
+  created_by                           Int?
+  modified_at                          DateTime?             @db.Timestamp(6)
+  modified_by                          Int?
+  deleted_at                           DateTime?             @db.Timestamp(6)
+  researcher_articles                  researcher_articles[]
+  researcher_projects                  researcher_projects[]
+  researcher_socials                   researcher_socials[]
+  users_researchers_created_byTousers  users?                @relation("researchers_created_byTousers", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users_researchers_modified_byTousers users?                @relation("researchers_modified_byTousers", fields: [modified_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model results {
+  id          Int       @id @default(autoincrement())
+  description String
+  project_id  Int?
+  deleted_at  DateTime? @db.Timestamp(6)
+  projects    projects? @relation(fields: [project_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model social_networks {
+  id                 Int                  @id @default(autoincrement())
+  name               String               @db.VarChar(100)
+  url_image          String?
+  deleted_at         DateTime?            @db.Timestamp(6)
+  researcher_socials researcher_socials[]
+}
+
+model specific_objectives {
+  id          Int       @id @default(autoincrement())
+  description String
+  group_id    Int?
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+  deleted_at  DateTime? @db.Timestamp(6)
+  groups      groups?   @relation(fields: [group_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model users {
+  id                                         Int           @id @default(autoincrement())
+  name                                       String        @db.VarChar(255)
+  email                                      String        @unique @db.VarChar(255)
+  password                                   String        @db.VarChar(255)
+  role                                       String        @db.VarChar(50)
+  token                                      String?
+  created_at                                 DateTime?     @default(now()) @db.Timestamp(6)
+  created_by                                 Int?
+  modified_at                                DateTime?     @db.Timestamp(6)
+  modified_by                                Int?
+  deleted_at                                 DateTime?     @db.Timestamp(6)
+  articles_articles_created_byTousers        articles[]    @relation("articles_created_byTousers")
+  articles_articles_modified_byTousers       articles[]    @relation("articles_modified_byTousers")
+  groups_groups_created_byTousers            groups[]      @relation("groups_created_byTousers")
+  groups_groups_modified_byTousers           groups[]      @relation("groups_modified_byTousers")
+  projects_projects_created_byTousers        projects[]    @relation("projects_created_byTousers")
+  projects_projects_modified_byTousers       projects[]    @relation("projects_modified_byTousers")
+  researchers_researchers_created_byTousers  researchers[] @relation("researchers_created_byTousers")
+  researchers_researchers_modified_byTousers researchers[] @relation("researchers_modified_byTousers")
+  users_users_created_byTousers              users?        @relation("users_created_byTousers", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_creation")
+  other_users_users_created_byTousers        users[]       @relation("users_created_byTousers")
+  users_users_modified_byTousers             users?        @relation("users_modified_byTousers", fields: [modified_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_modification")
+  other_users_users_modified_byTousers       users[]       @relation("users_modified_byTousers")
+}
